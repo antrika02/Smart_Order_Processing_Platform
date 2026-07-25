@@ -1,296 +1,423 @@
-# 🚀 Backend Service Platform
+# Smart Order Processing Platform
 
-> A production-inspired backend platform built with Java and Spring Boot, focusing on scalable REST APIs, high-performance data access, distributed caching, and containerized deployment.
+> A production-grade, scalable backend system built with Java and Spring Boot that simulates how modern e-commerce companies (Amazon, Swiggy, Blinkit, Flipkart, etc.) process users, products, inventory, and orders.
 
-<p align="center">
+This project is being built from scratch with a strong focus on **software engineering principles**, **system design**, **performance optimization**, and **production-ready backend development**.
 
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-
-</p>
+The goal is to build a backend that demonstrates how real-world services are designed, optimized, tested, monitored, and deployed.
 
 ---
 
-# 📖 Overview
+# 🎯 Project Goals
 
-Backend Service Platform is a scalable REST API system designed using modern backend engineering principles.
-
-The project demonstrates how production services are built using modular architecture, stateless APIs, distributed caching, efficient database design, and containerized deployments.
-
-Rather than focusing solely on CRUD operations, the platform emphasizes performance, maintainability, scalability, and resilience.
-
----
-
-# ✨ Features
-
-- ⚡ High-performance REST APIs
-- 🧩 Modular Spring Boot Architecture
-- 🔐 Stateless Service Design
-- 📦 Request Validation
-- 🚨 Centralized Exception Handling
-- 🗄️ MySQL Integration
-- ⚡ Redis Distributed Caching
-- 🚦 Token Bucket Rate Limiting
-- 🐳 Dockerized Deployment
-- 📈 Query Optimization
-- 🔍 Composite Database Indexing
-- 📊 Performance Benchmarking
+- Build scalable REST APIs using Spring Boot
+- Learn production backend architecture
+- Implement secure authentication & authorization
+- Improve database performance through indexing and optimization
+- Integrate Redis for distributed caching
+- Apply Design Patterns used in industry
+- Containerize the application using Docker
+- Write automated tests
+- Implement CI/CD
+- Add production monitoring and metrics
+- Document APIs using Swagger/OpenAPI
 
 ---
 
-# 🏗️ System Architecture
+# Current Status
 
-```text
-                     +----------------------+
-                     |      API Client      |
-                     +----------+-----------+
-                                |
-                                |
-                        HTTP REST Requests
-                                |
-               +----------------v----------------+
-               |        Spring Boot API          |
-               |  Controllers & Validation Layer |
-               +----------------+----------------+
-                                |
-                    Service Layer (Business Logic)
-                                |
-             +------------------+------------------+
-             |                                     |
-     +-------v--------+                    +-------v--------+
-     | Redis Cache    |                    | Authentication |
-     | (Distributed)  |                    | & Rate Limiter |
-     +-------+--------+                    +-------+--------+
-             |                                     |
-             +------------------+------------------+
-                                |
-                      Repository Layer (JPA)
-                                |
-                       +--------v--------+
-                       |     MySQL DB    |
-                       +-----------------+
+> Project Under Active Development
+
+This repository documents the complete journey of building a production backend from scratch.
+
+Development is happening in small milestones with meaningful Git commits after every completed feature.
+
+---
+
+# Planned Architecture
+
+```
+                Client
+                   │
+            REST API Requests
+                   │
+          Spring Boot Controllers
+                   │
+            Service Layer
+                   │
+     ┌─────────────┴─────────────┐
+     │                           │
+ Business Logic             Redis Cache
+     │                           │
+     └─────────────┬─────────────┘
+                   │
+           Repository Layer
+                   │
+               Spring Data JPA
+                   │
+                 MySQL
 ```
 
 ---
 
-# ⚙️ Tech Stack
+# Tech Stack
 
-## Language
+## Backend
 
-- Java
-
-## Framework
-
-- Spring Boot
+- Java 21
+- Spring Boot 3
+- Spring MVC
+- Spring Data JPA
+- Spring Security
+- JWT Authentication
 
 ## Database
 
 - MySQL
+- Flyway Migration
 
-## Cache
+## Caching
 
 - Redis
 
-## Infrastructure
+## Documentation
+
+- Swagger / OpenAPI
+
+## Validation
+
+- Jakarta Validation
+
+## Testing
+
+- JUnit 5
+- Mockito
+- Testcontainers
+
+## DevOps
 
 - Docker
+- Docker Compose
+- GitHub Actions
+
+## Monitoring
+
+- Spring Boot Actuator
+- Micrometer
+- Prometheus
+- Grafana
 
 ---
 
-# 🏛️ Design Patterns
+# 📁 Planned Project Structure
 
-This project follows object-oriented design principles and industry-standard design patterns.
-
-- Strategy Pattern
-- Factory Pattern
-- Repository Pattern
-- Dependency Injection
-- Layered Architecture
-
----
-
-# 📂 Project Structure
-
-```text
-backend-service-platform/
-
-├── src/
+```
+smart-order-platform
 │
-├── controller/
+├── src
+│   ├── main
+│   │   ├── java
+│   │   │   ├── config
+│   │   │   ├── controller
+│   │   │   ├── dto
+│   │   │   ├── entity
+│   │   │   ├── exception
+│   │   │   ├── factory
+│   │   │   ├── mapper
+│   │   │   ├── metrics
+│   │   │   ├── repository
+│   │   │   ├── security
+│   │   │   ├── service
+│   │   │   ├── strategy
+│   │   │   ├── validation
+│   │   │   └── util
+│   │
+│   └── resources
 │
-├── service/
-│
-├── repository/
-│
-├── model/
-│
-├── dto/
-│
-├── exception/
-│
-├── config/
-│
-├── security/
-│
-├── cache/
-│
-├── rate_limiter/
-│
-├── docker/
-│
+├── docker
+├── docs
+├── tests
+├── docker-compose.yml
 └── README.md
 ```
 
 ---
 
-# ⚡ Request Lifecycle
+#  Planned Features
 
-```text
-Client Request
+## User Management
 
-        │
-        ▼
+- User Registration
+- Login
+- JWT Authentication
+- Password Encryption
+- Role-Based Authorization
 
-API Controller
+---
 
-        │
-        ▼
+## Product Management
 
-Request Validation
+- Product CRUD
+- Categories
+- Product Search
+- Pagination
+- Sorting
+- Filtering
 
-        │
-        ▼
+---
 
-Business Service
+## Inventory
 
-        │
-        ▼
+- Stock Management
+- Inventory Validation
+- Low Stock Detection
 
-Redis Cache
+---
 
-        │
-        ▼
+## Order Processing
 
-(Cache Miss)
+- Place Order
+- Update Order
+- Cancel Order
+- Order History
+- Order Status Tracking
 
-        │
-        ▼
+---
 
-Repository Layer
+## Performance Optimization
 
-        │
-        ▼
+- Redis Caching
+- Cache TTL
+- Cache Invalidation
+- Composite Database Indexes
+- Query Optimization
 
-MySQL Database
+---
 
-        │
-        ▼
+## Security
 
-Cache Update
+- JWT Tokens
+- Password Hashing
+- Spring Security
+- Role-Based Access
+- API Rate Limiting
 
-        │
-        ▼
+---
 
-Response Returned
+## Error Handling
+
+- Global Exception Handler
+- Custom Exceptions
+- Standardized API Error Responses
+
+Example:
+
+```json
+{
+  "timestamp": "2026-07-25T12:00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Product not found",
+  "path": "/api/products/5"
+}
 ```
 
 ---
 
-# 🚀 Performance Optimizations
+# Monitoring
 
-### Database
+Application metrics will be exposed using:
 
-- Composite Indexing
-- Query Execution Plan Analysis
-- Optimized Schema Design
-- Reduced Query Latency
+- Spring Boot Actuator
+- Micrometer
+- Prometheus
+- Grafana
 
-### Caching
+Metrics include:
 
-- Redis Distributed Cache
-- Configurable TTL
-- Cache Invalidation Strategies
-- Read Optimization
+- Request Count
+- Response Time
+- Cache Hit Ratio
+- JVM Metrics
+- Memory Usage
+- CPU Usage
+- Database Connections
 
-### API
+---
 
+#  Deployment
+
+The entire application stack will run using Docker Compose.
+
+Services include:
+
+- Spring Boot API
+- MySQL
+- Redis
+- Prometheus
+- Grafana
+
+---
+
+#  Design Patterns
+
+This project intentionally demonstrates commonly used object-oriented design patterns.
+
+- Repository Pattern
+- Strategy Pattern
+- Factory Pattern
+- Builder Pattern
+- Dependency Injection
+
+---
+
+#  Architecture Principles
+
+The application follows:
+
+- Layered Architecture
+- Separation of Concerns
+- SOLID Principles
 - Stateless Services
-- Efficient Request Validation
-- Centralized Error Handling
-- Modular Service Layer
+- RESTful API Design
+- Clean Code Practices
 
 ---
 
-# 🛡️ Reliability Features
+#  API Documentation
 
-- Stateless API Architecture
-- Token Bucket Rate Limiting
-- Predictable Error Responses
-- Graceful Exception Handling
-- Dockerized Environment Consistency
+Interactive API documentation will be available through Swagger UI.
 
----
-
-# 🐳 Deployment
-
-Clone the repository
-
-```bash
-git clone https://github.com/yourusername/backend-service-platform.git
 ```
-
-Navigate to the project
-
-```bash
-cd backend-service-platform
-```
-
-Run using Docker
-
-```bash
-docker-compose up --build
+http://localhost:8080/swagger-ui.html
 ```
 
 ---
 
-# 📈 Performance Results
+#  Testing Strategy
 
-- 🚀 Improved database throughput by **40%**
-- ⚡ Reduced repeated database reads using Redis caching
-- 📊 Optimized SQL execution plans using composite indexing
-- 🔒 Protected APIs against traffic spikes using token bucket rate limiting
-- 🐳 Eliminated environment-specific deployment issues through containerization
+The project includes:
 
----
-
-
-# 🎯 Future Improvements
-
-- Spring Security + OAuth2
-- API Gateway
-- Service Discovery
-- Kafka Event Streaming
-- Distributed Tracing
-- Prometheus + Grafana Monitoring
-- Kubernetes Deployment
-- Circuit Breakers (Resilience4j)
-- Distributed Transactions
-- CI/CD Pipeline
+- Unit Tests
+- Integration Tests
+- Repository Tests
+- Service Tests
+- Controller Tests
+- Testcontainers for database testing
 
 ---
 
+#  Performance Improvements
 
-# 🤝 Contributing
+The project explores backend optimization techniques such as:
 
-Contributions, suggestions, and feedback are welcome.
-
-Feel free to fork the repository and submit a Pull Request.
+- Database Indexing
+- Query Execution Analysis
+- Redis Caching
+- Connection Pooling
+- Rate Limiting
+- Response Time Optimization
 
 ---
 
-# ⭐ Support
+#  Docker
 
-If you found this project useful, consider giving it a ⭐.
+The application is fully containerized.
+
+Services:
+
+- Backend API
+- MySQL
+- Redis
+- Prometheus
+- Grafana
+
+Start everything using:
+
+```bash
+docker compose up --build
+```
+
+---
+
+#  Development Roadmap
+
+## Phase 1
+
+- [ ] Project Setup
+- [ ] Spring Boot Configuration
+- [ ] MySQL Integration
+- [ ] Docker Setup
+
+---
+
+## Phase 2
+
+- [ ] Product Module
+- [ ] Category Module
+- [ ] Validation
+- [ ] Exception Handling
+
+---
+
+## Phase 3
+
+- [ ] Authentication
+- [ ] JWT
+- [ ] Spring Security
+- [ ] Role Management
+
+---
+
+## Phase 4
+
+- [ ] Order Module
+- [ ] Inventory Module
+- [ ] Order Processing
+
+---
+
+## Phase 5
+
+- [ ] Redis Integration
+- [ ] Distributed Caching
+- [ ] Cache Invalidation
+
+---
+
+## Phase 6
+
+- [ ] Database Optimization
+- [ ] Composite Indexes
+- [ ] Query Optimization
+
+---
+
+## Phase 7
+
+- [ ] Testing
+- [ ] Docker Compose
+- [ ] CI/CD Pipeline
+
+---
+
+## Phase 8
+
+- [ ] Monitoring
+- [ ] Prometheus
+- [ ] Grafana
+- [ ] Metrics Dashboard
+
+---
+
+# Contributing
+
+This is currently a personal learning and portfolio project.
+
+Contributions, discussions, and suggestions are welcome.
+
+---
+
+#  Acknowledgements
+
+This project is inspired by production backend architectures used in modern technology companies and is being built to explore scalable software engineering practices rather than replicate any single production system.
