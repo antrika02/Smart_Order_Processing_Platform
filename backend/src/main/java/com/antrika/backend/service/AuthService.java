@@ -7,6 +7,7 @@ import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.dto.UserResponse;
 import com.antrika.backend.entity.User;
 import com.antrika.backend.exception.InvalidCredentialsException;
+import com.antrika.backend.exception.UserAlreadyExistsException;
 import com.antrika.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,7 @@ public class AuthService {
     public UserResponse register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("Email already registered");
+            throw new UserAlreadyExistsException("Email already registered");
         }
 
         String hashedPassword = passwordHasher.hash(request.password());
@@ -41,9 +42,9 @@ public class AuthService {
         User savedUser = userRepository.save(user);
 
         return new UserResponse(
-            savedUser.getId(),
-            savedUser.getName(),
-            savedUser.getEmail()
+                savedUser.getId(),
+                savedUser.getName(),
+                savedUser.getEmail()
         );
     }
 
