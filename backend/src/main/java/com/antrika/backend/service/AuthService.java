@@ -1,9 +1,11 @@
 package com.antrika.backend.service;
 
 import com.antrika.backend.auth.PasswordHasher;
-import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.dto.LoginRequest;
+import com.antrika.backend.dto.LoginResponse;
+import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.entity.User;
+import com.antrika.backend.exception.InvalidCredentialsException;
 import com.antrika.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -38,15 +40,24 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    public User login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() ->
+                        new InvalidCredentialsException("Invalid email or password")
+                );
 
-        if (!passwordHasher.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+        if (!passwordHasher.matches(
+                request.password(),
+                user.getPassword()
+        )) {
+            throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        return user;
+        return new LoginResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
     }
 }
