@@ -3,7 +3,7 @@ package com.antrika.backend.controller;
 import com.antrika.backend.dto.LoginRequest;
 import com.antrika.backend.dto.LoginResponse;
 import com.antrika.backend.dto.RegisterRequest;
-import com.antrika.backend.entity.User;
+import com.antrika.backend.dto.UserResponse;
 import com.antrika.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public User register(@Valid @RequestBody RegisterRequest request) {
+    public UserResponse register(@Valid @RequestBody RegisterRequest request){
 
         return authService.register(request);
     }

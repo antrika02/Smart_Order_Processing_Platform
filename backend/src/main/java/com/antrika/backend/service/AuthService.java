@@ -4,6 +4,7 @@ import com.antrika.backend.auth.PasswordHasher;
 import com.antrika.backend.dto.LoginRequest;
 import com.antrika.backend.dto.LoginResponse;
 import com.antrika.backend.dto.RegisterRequest;
+import com.antrika.backend.dto.UserResponse;
 import com.antrika.backend.entity.User;
 import com.antrika.backend.exception.InvalidCredentialsException;
 import com.antrika.backend.repository.UserRepository;
@@ -23,7 +24,7 @@ public class AuthService {
         this.passwordHasher = passwordHasher;
     }
 
-    public User register(RegisterRequest request) {
+    public UserResponse register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new RuntimeException("Email already registered");
@@ -37,7 +38,13 @@ public class AuthService {
         user.setEmail(request.email());
         user.setPassword(hashedPassword);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        return new UserResponse(
+            savedUser.getId(),
+            savedUser.getName(),
+            savedUser.getEmail()
+        );
     }
 
     public LoginResponse login(LoginRequest request) {
