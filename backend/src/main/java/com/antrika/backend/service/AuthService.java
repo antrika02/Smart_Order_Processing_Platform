@@ -1,6 +1,7 @@
 package com.antrika.backend.service;
 
 import com.antrika.backend.auth.PasswordHasher;
+import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.entity.User;
 import com.antrika.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,19 @@ public class AuthService {
         this.passwordHasher = passwordHasher;
     }
 
-    public User register(String email, String name, String password) {
+    public User register(RegisterRequest request) {
+
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        String hashedPassword = passwordHasher.hash(request.password());
 
         User user = new User();
 
-        user.setEmail(email);
-        user.setName(name);
-        user.setPassword(passwordHasher.hash(password));
+        user.setName(request.name());
+        user.setEmail(request.email());
+        user.setPassword(hashedPassword);
 
         return userRepository.save(user);
     }

@@ -3,11 +3,12 @@ package com.antrika.backend.controller;
 import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.entity.User;
 import com.antrika.backend.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -18,12 +19,7 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public User register(@RequestBody RegisterRequest request) {
-
-        return authService.register(
-                request.email(),
-                request.name(),
-                request.password()
-        );
+    public User register(@Valid @RequestBody RegisterRequest request) {
+        return authService.register(request);
     }
 }
