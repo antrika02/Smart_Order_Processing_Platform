@@ -4,9 +4,11 @@ import com.antrika.backend.dto.LoginRequest;
 import com.antrika.backend.dto.LoginResponse;
 import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.dto.UserResponse;
+import com.antrika.backend.entity.User;
 import com.antrika.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,14 +23,28 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse register(@Valid @RequestBody RegisterRequest request){
-
+    public UserResponse register(
+            @Valid @RequestBody RegisterRequest request
+    ) {
         return authService.register(request);
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-
+    public LoginResponse login(
+            @Valid @RequestBody LoginRequest request
+    ) {
         return authService.login(request);
+    }
+
+    @GetMapping("/me")
+    public UserResponse me(Authentication authentication) {
+
+        User user = (User) authentication.getPrincipal();
+
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
     }
 }
