@@ -9,6 +9,7 @@ import com.antrika.backend.entity.User;
 import com.antrika.backend.exception.InvalidCredentialsException;
 import com.antrika.backend.exception.UserAlreadyExistsException;
 import com.antrika.backend.repository.UserRepository;
+import com.antrika.backend.security.JwtService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,13 +17,16 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
-            PasswordHasher passwordHasher
+            PasswordHasher passwordHasher,
+            JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
+        this.jwtService = jwtService;
     }
 
     public UserResponse register(RegisterRequest request) {
@@ -62,10 +66,16 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
+        String token = jwtService.generateToken(
+                user.getId(),
+                user.getEmail()
+        );
+
         return new LoginResponse(
                 user.getId(),
                 user.getName(),
-                user.getEmail()
+                user.getEmail(),
+                token
         );
     }
 }
