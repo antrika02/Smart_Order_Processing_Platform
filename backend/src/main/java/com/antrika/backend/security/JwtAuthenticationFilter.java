@@ -37,6 +37,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        System.out.println(
+                "JWT DEBUG -> " + request.getMethod()
+                + " " + request.getRequestURI()
+                + " | Authorization present: "
+                + (authHeader != null)
+        );
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;

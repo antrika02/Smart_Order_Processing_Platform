@@ -2,9 +2,14 @@ package com.antrika.backend.product.service;
 
 import com.antrika.backend.product.dto.CreateProductRequest;
 import com.antrika.backend.product.dto.ProductResponse;
+import com.antrika.backend.product.dto.UpdateProductRequest;
 import com.antrika.backend.product.entity.Product;
+import com.antrika.backend.product.exception.ProductNotFoundException;
 import com.antrika.backend.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+
+
+import java.util.List;
 
 @Service
 public class ProductService {
@@ -29,6 +34,14 @@ public class ProductService {
         return toResponse(savedProduct);
     }
 
+    public List<ProductResponse> getAllProducts() {
+
+        return productRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private ProductResponse toResponse(Product product) {
 
         return new ProductResponse(
@@ -40,4 +53,51 @@ public class ProductService {
                 product.getActive()
         );
     }
+
+    public ProductResponse getProductById(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ProductNotFoundException(
+                                "Product not found with id: " + id
+                        )
+                );
+
+        return toResponse(product);
+     
+     }
+
+     public ProductResponse updateProduct(
+        Long id,
+        UpdateProductRequest request
+      ) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ProductNotFoundException(
+                                "Product not found with id: " + id
+                        )
+                );
+
+        product.setName(request.name());
+        product.setDescription(request.description());
+        product.setPrice(request.price());
+        product.setStockQuantity(request.stockQuantity());
+
+        Product updatedProduct = productRepository.save(product);
+
+        return toResponse(updatedProduct);
+       }
+
+       public void deleteProduct(Long id) {
+
+                Product product = productRepository.findById(id)
+                     .orElseThrow(() ->
+                                 new ProductNotFoundException(
+                                        "Product not found with id: " + id
+                                )
+                        );
+
+                productRepository.delete(product);
+        }
 }
