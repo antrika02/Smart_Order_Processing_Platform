@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.antrika.backend.order.exception.InsufficientStockException;
 @Service
 public class OrderService {
 
@@ -69,7 +69,7 @@ public class OrderService {
                     );
 
             if (product.getStockQuantity() < itemRequest.quantity()) {
-                throw new RuntimeException(
+                throw new InsufficientStockException(
                         "Insufficient stock for product: "
                                 + product.getName()
                 );
