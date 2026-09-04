@@ -26,32 +26,24 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
 
     public OrderService(
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
-            ProductRepository productRepository,
-            UserRepository userRepository
-    ) {
+            ProductRepository productRepository
+    )  {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
 
-        String email = SecurityContextHolder
+        User user = (User) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
-                .getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
+                .getPrincipal();
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
