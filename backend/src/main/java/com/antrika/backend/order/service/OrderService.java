@@ -15,7 +15,7 @@ import com.antrika.backend.product.repository.ProductRepository;
 import com.antrika.backend.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +40,7 @@ public class OrderService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
 
         String email = SecurityContextHolder
@@ -81,6 +82,12 @@ public class OrderService {
                                 + product.getName()
                 );
             }
+
+            product.setStockQuantity(
+                    product.getStockQuantity() - itemRequest.quantity()
+            );
+
+            productRepository.save(product);
 
             BigDecimal itemTotal = product.getPrice()
                     .multiply(
