@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.antrika.backend.order.exception.OrderNotFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,5 +64,16 @@ public class GlobalExceptionHandler {
                 409,
                 ex.getMessage()
         );
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleOrderNotFound(
+            OrderNotFoundException ex
+    ) {
+        return new ApiError(
+             404,
+                ex.getMessage()
+       );
     }
 }

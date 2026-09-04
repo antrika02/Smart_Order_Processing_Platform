@@ -17,6 +17,7 @@ import com.antrika.backend.product.repository.ProductRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.antrika.backend.order.exception.OrderNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -157,5 +158,40 @@ public class OrderService {
                     );
                 })
                 .toList();
+    }
+
+    public OrderResponse getOrderById(Long orderId) {
+
+        User user = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        Order order = orderRepository
+                .findByIdAndUser(orderId, user)
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + orderId
+                        )
+                );
+
+        List<OrderItemResponse> items =
+                orderItemRepository.findByOrder(order)
+                        .stream()
+                        .map(item -> new OrderItemResponse(
+                                item.getProduct().getId(),
+                                item.getProduct().getName(),
+                                item.getQuantity(),
+                                item.getPrice()
+                        ))
+                        .toList();
+
+        return new OrderResponse(
+                order.getId(),
+                order.getTotalAmount(),
+                order.getStatus(),
+                order.getCreatedAt(),
+                items
+        );
     }
 }
