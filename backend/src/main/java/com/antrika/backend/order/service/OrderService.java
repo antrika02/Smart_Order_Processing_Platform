@@ -118,4 +118,25 @@ public class OrderService {
                 itemResponses
         );
     }
+
+
+    public List<OrderResponse> getMyOrders() {
+
+        User user = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        List<Order> orders = orderRepository.findByUser(user);
+
+        return orders.stream()
+                .map(order -> new OrderResponse(
+                        order.getId(),
+                        order.getTotalAmount(),
+                        order.getStatus(),
+                        order.getCreatedAt(),
+                        List.of()
+                ))
+                .toList();
+    }
 }

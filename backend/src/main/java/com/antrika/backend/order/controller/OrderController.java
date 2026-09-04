@@ -1,5 +1,6 @@
 package com.antrika.backend.order.controller;
 
+import java.util.List;
 import com.antrika.backend.order.dto.CreateOrderRequest;
 import com.antrika.backend.order.dto.OrderResponse;
 import com.antrika.backend.order.service.OrderService;
@@ -23,5 +24,9 @@ public class OrderController {
             @Valid @RequestBody CreateOrderRequest request
     ) {
         return orderService.createOrder(request);
+    }
+    @GetMapping
+    public List<OrderResponse> getMyOrders() {
+        return orderService.getMyOrders();
     }
 }
