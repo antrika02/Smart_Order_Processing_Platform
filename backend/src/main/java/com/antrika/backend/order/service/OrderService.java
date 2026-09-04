@@ -8,18 +8,20 @@ import com.antrika.backend.order.dto.OrderResponse;
 import com.antrika.backend.order.entity.Order;
 import com.antrika.backend.order.entity.OrderItem;
 import com.antrika.backend.order.entity.OrderStatus;
+import com.antrika.backend.order.exception.InsufficientStockException;
 import com.antrika.backend.order.repository.OrderItemRepository;
 import com.antrika.backend.order.repository.OrderRepository;
 import com.antrika.backend.product.entity.Product;
+import com.antrika.backend.product.exception.ProductNotFoundException;
 import com.antrika.backend.product.repository.ProductRepository;
-import com.antrika.backend.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import com.antrika.backend.order.exception.InsufficientStockException;
+
 @Service
 public class OrderService {
 
@@ -31,7 +33,7 @@ public class OrderService {
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
             ProductRepository productRepository
-    )  {
+    ) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
@@ -62,7 +64,7 @@ public class OrderService {
             Product product = productRepository
                     .findById(itemRequest.productId())
                     .orElseThrow(() ->
-                            new RuntimeException(
+                            new ProductNotFoundException(
                                     "Product not found with id: "
                                             + itemRequest.productId()
                             )
@@ -76,14 +78,17 @@ public class OrderService {
             }
 
             product.setStockQuantity(
-                    product.getStockQuantity() - itemRequest.quantity()
+                    product.getStockQuantity()
+                            - itemRequest.quantity()
             );
 
             productRepository.save(product);
 
             BigDecimal itemTotal = product.getPrice()
                     .multiply(
-                            BigDecimal.valueOf(itemRequest.quantity())
+                            BigDecimal.valueOf(
+                                    itemRequest.quantity()
+                            )
                     );
 
             totalAmount = totalAmount.add(itemTotal);
@@ -108,6 +113,7 @@ public class OrderService {
         }
 
         order.setTotalAmount(totalAmount);
+
         order = orderRepository.save(order);
 
         return new OrderResponse(
@@ -119,7 +125,6 @@ public class OrderService {
         );
     }
 
-
     public List<OrderResponse> getMyOrders() {
 
         User user = (User) SecurityContextHolder
@@ -130,13 +135,27 @@ public class OrderService {
         List<Order> orders = orderRepository.findByUser(user);
 
         return orders.stream()
-                .map(order -> new OrderResponse(
-                        order.getId(),
-                        order.getTotalAmount(),
-                        order.getStatus(),
-                        order.getCreatedAt(),
-                        List.of()
-                ))
+                .map(order -> {
+
+                    List<OrderItemResponse> items =
+                            orderItemRepository.findByOrder(order)
+                                    .stream()
+                                    .map(item -> new OrderItemResponse(
+                                            item.getProduct().getId(),
+                                            item.getProduct().getName(),
+                                            item.getQuantity(),
+                                            item.getPrice()
+                                    ))
+                                    .toList();
+
+                    return new OrderResponse(
+                            order.getId(),
+                            order.getTotalAmount(),
+                            order.getStatus(),
+                            order.getCreatedAt(),
+                            items
+                    );
+                })
                 .toList();
     }
 }
