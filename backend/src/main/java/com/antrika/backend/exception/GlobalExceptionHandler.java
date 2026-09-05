@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.antrika.backend.order.exception.OrderNotFoundException;
-
+import com.antrika.backend.order.exception.OrderCancellationException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,4 +76,14 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
        );
     }
+    @ExceptionHandler(OrderCancellationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+     public ApiError handleOrderCancellation(
+             OrderCancellationException ex
+     ) {
+         return new ApiError(
+             409,
+                ex.getMessage()
+         );
+      }
 }

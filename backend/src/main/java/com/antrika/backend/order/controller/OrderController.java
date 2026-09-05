@@ -38,4 +38,11 @@ public class OrderController {
     ) {
         return orderService.getOrderById(orderId);
     }
+
+    @DeleteMapping("/{orderId}/cancel")
+    public OrderResponse cancelOrder(
+            @PathVariable Long orderId
+    ) {
+        return orderService.cancelOrder(orderId);
+    }
 }
