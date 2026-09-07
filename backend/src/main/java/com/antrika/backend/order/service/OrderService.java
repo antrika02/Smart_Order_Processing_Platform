@@ -65,7 +65,7 @@ public class OrderService {
         for (CreateOrderItemRequest itemRequest : request.items()) {
 
             Product product = productRepository
-                    .findById(itemRequest.productId())
+                    .findByIdWithLock(itemRequest.productId())
                     .orElseThrow(() ->
                             new ProductNotFoundException(
                                     "Product not found with id: "
