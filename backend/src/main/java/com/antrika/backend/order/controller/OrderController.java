@@ -2,6 +2,7 @@ package com.antrika.backend.order.controller;
 
 import com.antrika.backend.order.dto.CreateOrderRequest;
 import com.antrika.backend.order.dto.OrderResponse;
+import com.antrika.backend.order.entity.OrderStatus;
 import com.antrika.backend.order.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,14 @@ public class OrderController {
     ) {
         return orderService.getOrderById(orderId);
     }
+
+    @PutMapping("/{orderId}/status")
+    public OrderResponse updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestParam OrderStatus status
+    ) {
+        return orderService.updateOrderStatus(orderId, status);
+    }   
 
     @DeleteMapping("/{orderId}/cancel")
     public OrderResponse cancelOrder(

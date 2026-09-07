@@ -11,6 +11,7 @@ import com.antrika.backend.order.exception.OrderNotFoundException;
 import com.antrika.backend.order.exception.OrderCancellationException;
 import java.util.HashMap;
 import java.util.Map;
+import com.antrika.backend.order.exception.InvalidOrderStatusTransitionException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -86,4 +87,14 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
          );
       }
+      @ExceptionHandler(InvalidOrderStatusTransitionException.class)
+      @ResponseStatus(HttpStatus.CONFLICT)
+       public ApiError handleInvalidOrderStatusTransition(
+                InvalidOrderStatusTransitionException ex
+        ) {
+             return new ApiError(
+              409,
+                      ex.getMessage()
+               );
+        }
 }

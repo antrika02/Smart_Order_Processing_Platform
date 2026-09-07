@@ -9,6 +9,8 @@ import com.antrika.backend.order.entity.Order;
 import com.antrika.backend.order.entity.OrderItem;
 import com.antrika.backend.order.entity.OrderStatus;
 import com.antrika.backend.order.exception.InsufficientStockException;
+import com.antrika.backend.order.exception.InvalidOrderStatusTransitionException;
+import com.antrika.backend.order.exception.OrderCancellationException;
 import com.antrika.backend.order.exception.OrderNotFoundException;
 import com.antrika.backend.order.repository.OrderItemRepository;
 import com.antrika.backend.order.repository.OrderRepository;
@@ -18,7 +20,7 @@ import com.antrika.backend.product.repository.ProductRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.antrika.backend.order.exception.OrderCancellationException;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -211,9 +213,9 @@ public class OrderService {
                         )
                 );
 
-       if (order.getStatus() != OrderStatus.PENDING) {
-           throw new OrderCancellationException(
-            "Order cannot be cancelled in its current status"
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new OrderCancellationException(
+                    "Order cannot be cancelled in its current status"
             );
         }
 
@@ -253,5 +255,79 @@ public class OrderService {
                 order.getCreatedAt(),
                 itemResponses
         );
+    }
+
+    @Transactional
+    public OrderResponse updateOrderStatus(
+            Long orderId,
+            OrderStatus newStatus
+    ) {
+
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() ->
+                        new OrderNotFoundException(
+                                "Order not found with id: " + orderId
+                        )
+                );
+
+        OrderStatus currentStatus = order.getStatus();
+
+        if (!isValidTransition(currentStatus, newStatus)) {
+            throw new InvalidOrderStatusTransitionException(
+                    "Invalid order status transition: "
+                            + currentStatus
+                            + " -> "
+                            + newStatus
+            );
+        }
+
+        order.setStatus(newStatus);
+
+        order = orderRepository.save(order);
+
+        List<OrderItemResponse> items =
+                orderItemRepository.findByOrder(order)
+                        .stream()
+                        .map(item -> new OrderItemResponse(
+                                item.getProduct().getId(),
+                                item.getProduct().getName(),
+                                item.getQuantity(),
+                                item.getPrice()
+                        ))
+                        .toList();
+
+        return new OrderResponse(
+                order.getId(),
+                order.getTotalAmount(),
+                order.getStatus(),
+                order.getCreatedAt(),
+                items
+        );
+    }
+
+    private boolean isValidTransition(
+            OrderStatus currentStatus,
+            OrderStatus newStatus
+    ) {
+
+        return switch (currentStatus) {
+
+            case PENDING ->
+                    newStatus == OrderStatus.CONFIRMED
+                            || newStatus == OrderStatus.CANCELLED;
+
+            case CONFIRMED ->
+                    newStatus == OrderStatus.PROCESSING;
+
+            case PROCESSING ->
+                    newStatus == OrderStatus.SHIPPED;
+
+            case SHIPPED ->
+                    newStatus == OrderStatus.DELIVERED;
+
+            case DELIVERED, CANCELLED ->
+                    false;
+        };
     }
 }
