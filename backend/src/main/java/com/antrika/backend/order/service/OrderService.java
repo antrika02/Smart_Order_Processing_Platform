@@ -5,6 +5,7 @@ import com.antrika.backend.order.dto.CreateOrderItemRequest;
 import com.antrika.backend.order.dto.CreateOrderRequest;
 import com.antrika.backend.order.dto.OrderItemResponse;
 import com.antrika.backend.order.dto.OrderResponse;
+import com.antrika.backend.order.entity.IdempotencyKey;
 import com.antrika.backend.order.entity.Order;
 import com.antrika.backend.order.entity.OrderItem;
 import com.antrika.backend.order.entity.OrderStatus;
@@ -12,11 +13,13 @@ import com.antrika.backend.order.exception.InsufficientStockException;
 import com.antrika.backend.order.exception.InvalidOrderStatusTransitionException;
 import com.antrika.backend.order.exception.OrderCancellationException;
 import com.antrika.backend.order.exception.OrderNotFoundException;
+import com.antrika.backend.order.repository.IdempotencyKeyRepository;
 import com.antrika.backend.order.repository.OrderItemRepository;
 import com.antrika.backend.order.repository.OrderRepository;
 import com.antrika.backend.product.entity.Product;
 import com.antrika.backend.product.exception.ProductNotFoundException;
 import com.antrika.backend.product.repository.ProductRepository;
+import com.antrika.backend.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,24 +34,84 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final ProductRepository productRepository;
+    private final IdempotencyKeyRepository idempotencyKeyRepository;
+    private final UserRepository userRepository;
 
     public OrderService(
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
-            ProductRepository productRepository
+            ProductRepository productRepository,
+            IdempotencyKeyRepository idempotencyKeyRepository,
+            UserRepository userRepository
     ) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productRepository = productRepository;
+        this.idempotencyKeyRepository = idempotencyKeyRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request) {
+    public OrderResponse createOrder(
+            CreateOrderRequest request,
+            String idempotencyKey
+    ) {
 
-        User user = (User) SecurityContextHolder
+        User authenticatedUser = (User) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
+
+        /*
+         * Lock the user row while processing the request.
+         *
+         * This prevents two simultaneous requests from using
+         * the same idempotency key at the same time.
+         */
+        User user = userRepository
+                .findByIdWithLock(authenticatedUser.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
+
+        /*
+         * Check whether this idempotency key was already used.
+         */
+        var existingKey = idempotencyKeyRepository
+                .findByUserAndIdempotencyKey(
+                        user,
+                        idempotencyKey
+                );
+
+        /*
+         * If the key already exists, return the original order
+         * instead of creating another order.
+         */
+        if (existingKey.isPresent()) {
+
+            Order existingOrder = existingKey
+                    .get()
+                    .getOrder();
+
+            List<OrderItemResponse> items =
+                    orderItemRepository.findByOrder(existingOrder)
+                            .stream()
+                            .map(item -> new OrderItemResponse(
+                                    item.getProduct().getId(),
+                                    item.getProduct().getName(),
+                                    item.getQuantity(),
+                                    item.getPrice()
+                            ))
+                            .toList();
+
+            return new OrderResponse(
+                    existingOrder.getId(),
+                    existingOrder.getTotalAmount(),
+                    existingOrder.getStatus(),
+                    existingOrder.getCreatedAt(),
+                    items
+            );
+        }
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -74,6 +137,7 @@ public class OrderService {
                     );
 
             if (product.getStockQuantity() < itemRequest.quantity()) {
+
                 throw new InsufficientStockException(
                         "Insufficient stock for product: "
                                 + product.getName()
@@ -118,6 +182,21 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
 
         order = orderRepository.save(order);
+
+        /*
+         * Store the idempotency key together with the order.
+         *
+         * Because the whole method is transactional, the order,
+         * inventory changes and idempotency record are committed
+         * together.
+         */
+        IdempotencyKey key = new IdempotencyKey(
+                user,
+                idempotencyKey,
+                order
+        );
+
+        idempotencyKeyRepository.save(key);
 
         return new OrderResponse(
                 order.getId(),

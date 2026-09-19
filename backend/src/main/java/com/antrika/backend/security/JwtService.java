@@ -1,5 +1,6 @@
 package com.antrika.backend.security;
 
+import com.antrika.backend.entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -27,9 +28,14 @@ public class JwtService {
         this.expirationTime = expirationTime;
     }
 
-    public String generateToken(Long userId, String email) {
+    public String generateToken(
+            Long userId,
+            String email,
+            Role role
+    ) {
 
         Date now = new Date();
+
         Date expiration = new Date(
                 now.getTime() + expirationTime
         );
@@ -37,6 +43,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(email)
                 .claim("userId", userId)
+                .claim("role", role.name())
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(key)
@@ -59,6 +66,11 @@ public class JwtService {
     public Long extractUserId(String token) {
         return extractClaims(token)
                 .get("userId", Long.class);
+    }
+
+    public String extractRole(String token) {
+        return extractClaims(token)
+                .get("role", String.class);
     }
 
     public boolean isTokenValid(String token) {

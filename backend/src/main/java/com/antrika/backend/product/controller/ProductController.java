@@ -7,7 +7,7 @@ import com.antrika.backend.product.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import com.antrika.backend.product.dto.UpdateProductRequest;
+
 import java.util.List;
 
 @RestController
@@ -27,6 +27,7 @@ public class ProductController {
     ) {
         return productService.createProduct(request);
     }
+
     @PutMapping("/{id}")
     public ProductResponse updateProduct(
             @PathVariable Long id,
@@ -34,11 +35,12 @@ public class ProductController {
     ) {
         return productService.updateProduct(id, request);
     }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
-    } 
+    }
 
     @GetMapping
     public List<ProductResponse> getAllProducts() {
@@ -46,7 +48,9 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ProductResponse getProductById(@PathVariable Long id) {
+    public ProductResponse getProductById(
+            @PathVariable Long id
+    ) {
         return productService.getProductById(id);
     }
 }

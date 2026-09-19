@@ -5,6 +5,7 @@ import com.antrika.backend.dto.LoginRequest;
 import com.antrika.backend.dto.LoginResponse;
 import com.antrika.backend.dto.RegisterRequest;
 import com.antrika.backend.dto.UserResponse;
+import com.antrika.backend.entity.Role;
 import com.antrika.backend.entity.User;
 import com.antrika.backend.exception.InvalidCredentialsException;
 import com.antrika.backend.exception.UserAlreadyExistsException;
@@ -43,6 +44,9 @@ public class AuthService {
         user.setEmail(request.email());
         user.setPassword(hashedPassword);
 
+        // Every newly registered user is a CUSTOMER by default.
+        user.setRole(Role.CUSTOMER);
+
         User savedUser = userRepository.save(user);
 
         return new UserResponse(
@@ -56,19 +60,24 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() ->
-                        new InvalidCredentialsException("Invalid email or password")
+                        new InvalidCredentialsException(
+                                "Invalid email or password"
+                        )
                 );
 
         if (!passwordHasher.matches(
                 request.password(),
                 user.getPassword()
         )) {
-            throw new InvalidCredentialsException("Invalid email or password");
+            throw new InvalidCredentialsException(
+                    "Invalid email or password"
+            );
         }
 
         String token = jwtService.generateToken(
                 user.getId(),
-                user.getEmail()
+                user.getEmail(),
+                user.getRole()
         );
 
         return new LoginResponse(
