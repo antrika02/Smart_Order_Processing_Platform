@@ -1,6 +1,5 @@
 package com.antrika.backend.security;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,49 +33,41 @@ public class SecurityConfig {
                         )
                 )
 
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(
-                                (request, response, authException) ->
-                                        response.sendError(
-                                                HttpServletResponse.SC_UNAUTHORIZED,
-                                                "Unauthorized"
-                                        )
-                        )
-                )
-
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public authentication endpoints
+                        // Authentication endpoints
                         .requestMatchers(
                                 "/auth/register",
                                 "/auth/login"
                         ).permitAll()
 
-                        // Product reads are available to authenticated users
+                        // Authenticated users can read products
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/products",
                                 "/products/**"
                         ).authenticated()
 
-                        // Product writes are ADMIN only
+                        // Only ADMIN can create products
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/products",
                                 "/products/**"
                         ).hasRole("ADMIN")
 
+                        // Only ADMIN can update products
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/products/**"
                         ).hasRole("ADMIN")
 
+                        // Only ADMIN can delete products
                         .requestMatchers(
                                 HttpMethod.DELETE,
                                 "/products/**"
                         ).hasRole("ADMIN")
 
-                        // Order status changes are ADMIN only
+                        // Only ADMIN can change order status
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/orders/*/status"

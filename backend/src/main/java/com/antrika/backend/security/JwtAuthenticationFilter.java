@@ -51,8 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         if (!jwtService.isTokenValid(token)) {
-            log.debug(
-                    "Rejected invalid JWT for {} {}",
+            log.warn(
+                    "Rejected invalid JWT: method={}, uri={}",
                     request.getMethod(),
                     request.getRequestURI()
             );
@@ -70,6 +70,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .orElse(null);
 
         if (user == null) {
+            log.warn("JWT user not found: email={}", email);
+
             response.sendError(
                     HttpServletResponse.SC_UNAUTHORIZED,
                     "User not found"
@@ -89,8 +91,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         List.of(authority)
                 );
 
-        SecurityContextHolder.getContext()
+        SecurityContextHolder
+                .getContext()
                 .setAuthentication(authentication);
+
+        log.info(
+                "JWT authenticated: email={}, role={}, authority={}, method={}, uri={}",
+                email,
+                user.getRole(),
+                authority.getAuthority(),
+                request.getMethod(),
+                request.getRequestURI()
+        );
+
+        log.info(
+                "SecurityContext: authenticated={}, authorities={}",
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .isAuthenticated(),
+                SecurityContextHolder.getContext()
+                        .getAuthentication()
+                        .getAuthorities()
+        );
 
         filterChain.doFilter(request, response);
     }
