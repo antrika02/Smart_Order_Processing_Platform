@@ -67,6 +67,25 @@ public class SecurityConfig {
                                 "/products/**"
                         ).hasRole("ADMIN")
 
+                        // Authenticated users can create orders
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/orders"
+                        ).authenticated()
+
+                        // Authenticated users can view their orders
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/orders",
+                                "/orders/**"
+                        ).authenticated()
+
+                        // Authenticated users can cancel their own orders
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/orders/*/cancel"
+                        ).authenticated()
+
                         // Only ADMIN can change order status
                         .requestMatchers(
                                 HttpMethod.PUT,

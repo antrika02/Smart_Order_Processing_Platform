@@ -284,14 +284,26 @@ public class OrderService {
                 .getAuthentication()
                 .getPrincipal();
 
+        /*
+         * Lock the order row while cancellation is being processed.
+         *
+         * This prevents multiple concurrent requests from
+         * cancelling the same order simultaneously.
+         */
         Order order = orderRepository
-                .findByIdAndUser(orderId, user)
+                .findByIdAndUserWithLock(orderId, user)
                 .orElseThrow(() ->
                         new OrderNotFoundException(
                                 "Order not found with id: " + orderId
                         )
                 );
 
+        /*
+         * Only PENDING orders can be cancelled.
+         *
+         * Because the order row is locked, concurrent requests
+         * will see CANCELLED after the first transaction commits.
+         */
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new OrderCancellationException(
                     "Order cannot be cancelled in its current status"
@@ -303,7 +315,19 @@ public class OrderService {
 
         for (OrderItem item : items) {
 
-            Product product = item.getProduct();
+            /*
+             * Lock the product row before modifying inventory.
+             *
+             * This protects stock from concurrent modifications.
+             */
+            Product product = productRepository
+                    .findByIdWithLock(item.getProduct().getId())
+                    .orElseThrow(() ->
+                            new ProductNotFoundException(
+                                    "Product not found with id: "
+                                            + item.getProduct().getId()
+                            )
+                    );
 
             product.setStockQuantity(
                     product.getStockQuantity()
@@ -313,6 +337,9 @@ public class OrderService {
             productRepository.save(product);
         }
 
+        /*
+         * Mark the order as cancelled after restoring inventory.
+         */
         order.setStatus(OrderStatus.CANCELLED);
 
         order = orderRepository.save(order);
