@@ -28,4 +28,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("id") Long id,
             @Param("user") User user
     );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT o
+            FROM Order o
+            WHERE o.id = :id
+            """)
+    Optional<Order> findByIdWithLock(@Param("id") Long id);
 }

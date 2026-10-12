@@ -65,8 +65,9 @@ public class OrderService {
         /*
          * Lock the user row while processing the request.
          *
-         * This prevents two simultaneous requests from using
-         * the same idempotency key at the same time.
+         * This serializes concurrent order requests from the
+         * same user and prevents the same idempotency key from
+         * creating multiple orders.
          */
         User user = userRepository
                 .findByIdWithLock(authenticatedUser.getId())
@@ -186,8 +187,8 @@ public class OrderService {
         /*
          * Store the idempotency key together with the order.
          *
-         * Because the whole method is transactional, the order,
-         * inventory changes and idempotency record are committed
+         * The entire operation is transactional, so the order,
+         * inventory changes, and idempotency record are committed
          * together.
          */
         IdempotencyKey key = new IdempotencyKey(
@@ -369,8 +370,17 @@ public class OrderService {
             OrderStatus newStatus
     ) {
 
+        /*
+         * Lock the order row while changing its status.
+         *
+         * SecurityConfig already ensures that only ADMIN users
+         * can reach PUT /orders/{orderId}/status.
+         *
+         * The database lock prevents concurrent status updates
+         * from reading and modifying the same order simultaneously.
+         */
         Order order = orderRepository
-                .findById(orderId)
+                .findByIdWithLock(orderId)
                 .orElseThrow(() ->
                         new OrderNotFoundException(
                                 "Order not found with id: " + orderId
@@ -379,6 +389,12 @@ public class OrderService {
 
         OrderStatus currentStatus = order.getStatus();
 
+        /*
+         * Validate the state transition after acquiring the lock.
+         *
+         * This ensures that a concurrent request sees the latest
+         * committed status before attempting another transition.
+         */
         if (!isValidTransition(currentStatus, newStatus)) {
             throw new InvalidOrderStatusTransitionException(
                     "Invalid order status transition: "
